@@ -145,13 +145,27 @@ function drawForMeeting(meetingType, peopleList) {
         return;
     }
     
-    const excludePerson = lastWeek[meetingType];
-    const selected = drawRandom(peopleList, excludePerson);
+    const excludeFromLastWeek = lastWeek[meetingType];
+    const excludeFromCurrentWeek = Object.values(currentWeek).filter(p => p !== null && p !== currentWeek[meetingType]);
+    const excludePersons = [excludeFromLastWeek, ...excludeFromCurrentWeek].filter(p => p !== null);
     
-    if (!selected) {
+    let available = peopleList.filter(p => !excludePersons.includes(p));
+    
+    if (available.length === 0) {
+        available = peopleList.filter(p => p !== excludeFromLastWeek);
+    }
+    
+    if (available.length === 0) {
+        available = peopleList;
+    }
+    
+    if (available.length === 0) {
         alert('Erro ao realizar o sorteio.');
         return;
     }
+    
+    const randomIndex = Math.floor(Math.random() * available.length);
+    const selected = available[randomIndex];
     
     currentWeek[meetingType] = selected;
     saveCurrentWeek(currentWeek);
