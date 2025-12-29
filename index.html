@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Facilitadores</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎲 Sorteador de Facilitadores</h1>
+            <p class="subtitle">Sorteie os facilitadores das reuniões semanais</p>
+        </header>
+
+        <section class="config-section">
+            <h2>Configuração de Pessoas</h2>
+            <div class="input-group">
+                <label for="allPeople">Todas as pessoas (uma por linha):</label>
+                <textarea id="allPeople" rows="6" placeholder="Ana&#10;Bruno&#10;Carlos&#10;Diana&#10;Eduardo"></textarea>
+            </div>
+            <div class="input-group">
+                <label for="subgroupPeople">Subgrupo para Cards de Operação e Monitoramento (uma por linha):</label>
+                <textarea id="subgroupPeople" rows="4" placeholder="Ana&#10;Bruno&#10;Carlos"></textarea>
+            </div>
+            <button id="saveConfig" class="btn btn-secondary">Salvar Configuração</button>
+        </section>
+
+        <section class="meetings-section">
+            <div class="meeting-card">
+                <h3>📅 Daily</h3>
+                <p class="meeting-description">Sorteia entre todas as pessoas</p>
+                <div class="result-box" id="dailyResult">
+                    <span class="result-placeholder">Aguardando sorteio...</span>
+                </div>
+                <button class="btn btn-primary" id="drawDaily">Sortear Daily</button>
+                <div class="history" id="dailyHistory"></div>
+            </div>
+
+            <div class="meeting-card">
+                <h3>🃏 Cards de Operação</h3>
+                <p class="meeting-description">Sorteia do subgrupo específico</p>
+                <div class="result-box" id="cardsResult">
+                    <span class="result-placeholder">Aguardando sorteio...</span>
+                </div>
+                <button class="btn btn-primary" id="drawCards">Sortear Cards</button>
+                <div class="history" id="cardsHistory"></div>
+            </div>
+
+            <div class="meeting-card">
+                <h3>📊 Monitoramento</h3>
+                <p class="meeting-description">Sorteia do subgrupo específico</p>
+                <div class="result-box" id="monitoringResult">
+                    <span class="result-placeholder">Aguardando sorteio...</span>
+                </div>
+                <button class="btn btn-primary" id="drawMonitoring">Sortear Monitoramento</button>
+                <div class="history" id="monitoringHistory"></div>
+            </div>
+        </section>
+
+        <section class="actions-section">
+            <button id="resetWeek" class="btn btn-danger">🔄 Resetar Semana</button>
+            <button id="clearAll" class="btn btn-danger">🗑️ Limpar Tudo</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
