@@ -1,7 +1,7 @@
 const STORAGE_KEYS = {
     allPeople: 'facilitator_allPeople',
     subgroupPeople: 'facilitator_subgroupPeople',
-    lastWeek: 'facilitator_lastWeek',
+    history: 'facilitator_history',
     currentWeek: 'facilitator_currentWeek'
 };
 
@@ -62,12 +62,12 @@ function getCurrentWeek() {
     };
 }
 
-function getLastWeek() {
-    const last = getStoredData(STORAGE_KEYS.lastWeek);
-    return last || {
-        daily: null,
-        cards: null,
-        monitoring: null
+function getHistory() {
+    const history = getStoredData(STORAGE_KEYS.history);
+    return history || {
+        daily: [],
+        cards: [],
+        monitoring: []
     };
 }
 
@@ -75,8 +75,23 @@ function saveCurrentWeek(week) {
     setStoredData(STORAGE_KEYS.currentWeek, week);
 }
 
-function saveLastWeek(week) {
-    setStoredData(STORAGE_KEYS.lastWeek, week);
+function saveHistory(history) {
+    setStoredData(STORAGE_KEYS.history, history);
+}
+
+function addToHistory(meetingType, person) {
+    const history = getHistory();
+    if (!history[meetingType]) {
+        history[meetingType] = [];
+    }
+    
+    history[meetingType].push(person);
+    
+    if (history[meetingType].length > 4) {
+        history[meetingType].shift();
+    }
+    
+    saveHistory(history);
 }
 
 function loadCurrentWeek() {
@@ -99,23 +114,30 @@ function updateResultDisplay(meetingType, person) {
 }
 
 function updateHistory() {
-    const lastWeek = getLastWeek();
+    const history = getHistory();
     const currentWeek = getCurrentWeek();
     
-    updateHistoryDisplay('daily', lastWeek.daily, currentWeek.daily);
-    updateHistoryDisplay('cards', lastWeek.cards, currentWeek.cards);
-    updateHistoryDisplay('monitoring', lastWeek.monitoring, currentWeek.monitoring);
+    updateHistoryDisplay('daily', history.daily, currentWeek.daily);
+    updateHistoryDisplay('cards', history.cards, currentWeek.cards);
+    updateHistoryDisplay('monitoring', history.monitoring, currentWeek.monitoring);
 }
 
-function updateHistoryDisplay(meetingType, lastPerson, currentPerson) {
+function updateHistoryDisplay(meetingType, historyArray, currentPerson) {
     const historyDiv = document.getElementById(`${meetingType}History`);
     let html = '<div class="history-title">Histórico:</div>';
     
     if (currentPerson) {
         html += `<div class="history-item">Esta semana: <strong>${currentPerson}</strong></div>`;
     }
-    if (lastPerson) {
-        html += `<div class="history-item">Semana passada: ${lastPerson}</div>`;
+    
+    if (historyArray && historyArray.length > 0) {
+        const labels = ['1 semana atrás', '2 semanas atrás', '3 semanas atrás', '4 semanas atrás'];
+        const startIndex = Math.max(0, historyArray.length - 4);
+        
+        for (let i = historyArray.length - 1; i >= startIndex; i--) {
+            const labelIndex = historyArray.length - 1 - i;
+            html += `<div class="history-item">${labels[labelIndex]}: ${historyArray[i]}</div>`;
+        }
     }
     
     historyDiv.innerHTML = html;
@@ -138,25 +160,27 @@ function drawRandom(people, excludePerson = null) {
 
 function drawForMeeting(meetingType, peopleList) {
     const currentWeek = getCurrentWeek();
-    const lastWeek = getLastWeek();
+    const history = getHistory();
+    const historyForType = history[meetingType] || [];
     
     if (peopleList.length === 0) {
         alert(`Nenhuma pessoa disponível para ${meetingType === 'daily' ? 'Daily' : meetingType === 'cards' ? 'Cards de Operação' : 'Monitoramento'}.`);
         return;
     }
     
-    const excludeFromLastWeek = lastWeek[meetingType];
     const excludeFromCurrentWeek = Object.values(currentWeek).filter(p => p !== null && p !== currentWeek[meetingType]);
-    const excludePersons = [excludeFromLastWeek, ...excludeFromCurrentWeek].filter(p => p !== null);
+    const excludeFromHistory = historyForType.slice(-4);
+    const excludePersons = [...excludeFromHistory, ...excludeFromCurrentWeek].filter(p => p !== null);
     
     let available = peopleList.filter(p => !excludePersons.includes(p));
     
     if (available.length === 0) {
-        available = peopleList.filter(p => p !== excludeFromLastWeek);
-    }
-    
-    if (available.length === 0) {
-        available = peopleList;
+        if (historyForType.length > 0) {
+            const oldestPerson = historyForType[0];
+            available = peopleList.filter(p => p === oldestPerson);
+        } else {
+            available = peopleList;
+        }
     }
     
     if (available.length === 0) {
@@ -201,12 +225,21 @@ function drawMonitoring() {
 }
 
 function resetWeek() {
-    if (!confirm('Deseja resetar a semana atual? Os resultados serão movidos para o histórico da semana passada.')) {
+    if (!confirm('Deseja resetar a semana atual? Os resultados serão movidos para o histórico.')) {
         return;
     }
     
     const currentWeek = getCurrentWeek();
-    saveLastWeek(currentWeek);
+    
+    if (currentWeek.daily) {
+        addToHistory('daily', currentWeek.daily);
+    }
+    if (currentWeek.cards) {
+        addToHistory('cards', currentWeek.cards);
+    }
+    if (currentWeek.monitoring) {
+        addToHistory('monitoring', currentWeek.monitoring);
+    }
     
     const newWeek = {
         daily: null,
@@ -226,7 +259,7 @@ function clearAll() {
     
     localStorage.removeItem(STORAGE_KEYS.allPeople);
     localStorage.removeItem(STORAGE_KEYS.subgroupPeople);
-    localStorage.removeItem(STORAGE_KEYS.lastWeek);
+    localStorage.removeItem(STORAGE_KEYS.history);
     localStorage.removeItem(STORAGE_KEYS.currentWeek);
     
     document.getElementById('allPeople').value = '';
