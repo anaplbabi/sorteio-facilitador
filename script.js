@@ -58,7 +58,8 @@ function getCurrentWeek() {
     return current || {
         daily: null,
         cards: null,
-        monitoring: null
+        monitoring: null,
+        retrospectiva: null
     };
 }
 
@@ -67,7 +68,8 @@ function getHistory() {
     return history || {
         daily: [],
         cards: [],
-        monitoring: []
+        monitoring: [],
+        retrospectiva: []
     };
 }
 
@@ -99,6 +101,7 @@ function loadCurrentWeek() {
     updateResultDisplay('daily', week.daily);
     updateResultDisplay('cards', week.cards);
     updateResultDisplay('monitoring', week.monitoring);
+    updateResultDisplay('retrospectiva', week.retrospectiva);
     updateHistory();
 }
 
@@ -120,6 +123,7 @@ function updateHistory() {
     updateHistoryDisplay('daily', history.daily, currentWeek.daily);
     updateHistoryDisplay('cards', history.cards, currentWeek.cards);
     updateHistoryDisplay('monitoring', history.monitoring, currentWeek.monitoring);
+    updateHistoryDisplay('retrospectiva', history.retrospectiva, currentWeek.retrospectiva);
 }
 
 function updateHistoryDisplay(meetingType, historyArray, currentPerson) {
@@ -164,7 +168,8 @@ function drawForMeeting(meetingType, peopleList) {
     const historyForType = history[meetingType] || [];
     
     if (peopleList.length === 0) {
-        alert(`Nenhuma pessoa disponível para ${meetingType === 'daily' ? 'Daily' : meetingType === 'cards' ? 'Cards de Operação' : 'Monitoramento'}.`);
+        const names = { daily: 'Daily', cards: 'Cards de Operação', monitoring: 'Monitoramento', retrospectiva: 'Retrospectiva' };
+        alert(`Nenhuma pessoa disponível para ${names[meetingType] || meetingType}.`);
         return;
     }
     
@@ -224,6 +229,15 @@ function drawMonitoring() {
     drawForMeeting('monitoring', subgroupPeople);
 }
 
+function drawRetrospectiva() {
+    const allPeople = getAllPeople();
+    if (allPeople.length === 0) {
+        alert('Por favor, configure a lista de pessoas primeiro.');
+        return;
+    }
+    drawForMeeting('retrospectiva', allPeople);
+}
+
 function resetWeek() {
     if (!confirm('Deseja resetar a semana atual? Os resultados serão movidos para o histórico.')) {
         return;
@@ -240,11 +254,15 @@ function resetWeek() {
     if (currentWeek.monitoring) {
         addToHistory('monitoring', currentWeek.monitoring);
     }
+    if (currentWeek.retrospectiva) {
+        addToHistory('retrospectiva', currentWeek.retrospectiva);
+    }
     
     const newWeek = {
         daily: null,
         cards: null,
-        monitoring: null
+        monitoring: null,
+        retrospectiva: null
     };
     saveCurrentWeek(newWeek);
     
@@ -273,6 +291,7 @@ document.getElementById('saveConfig').addEventListener('click', saveConfig);
 document.getElementById('drawDaily').addEventListener('click', drawDaily);
 document.getElementById('drawCards').addEventListener('click', drawCards);
 document.getElementById('drawMonitoring').addEventListener('click', drawMonitoring);
+document.getElementById('drawRetrospectiva').addEventListener('click', drawRetrospectiva);
 document.getElementById('resetWeek').addEventListener('click', resetWeek);
 document.getElementById('clearAll').addEventListener('click', clearAll);
 
