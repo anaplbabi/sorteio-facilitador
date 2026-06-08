@@ -183,7 +183,8 @@ function drawForMeeting(meetingType, peopleList) {
         if (historyForType.length > 0) {
             const oldestPerson = historyForType[0];
             available = peopleList.filter(p => p === oldestPerson);
-        } else {
+        }
+        if (available.length === 0) {
             available = peopleList;
         }
     }
